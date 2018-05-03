@@ -5,28 +5,30 @@
  }
  
  // add error/update messages
- 
  // check if the user have submitted the settings
  // wordpress will add the "settings-updated" $_GET parameter to the url
  if ( isset( $_GET['settings-updated'] ) ) {
- // add settings saved message with the class of "updated"
- add_settings_error( 'extender_gallery_messages', 'extender_gallery_message', __( 'Settings Saved', 'extender_gallery' ), 'updated' );
+ 	// add settings saved message with the class of "updated"
+ 	add_settings_error( $this->plugin.'_messages', $this->plugin.'_message', __( 'Settings Saved', 'extender-photo-gallery' ), 'updated' );
  }
  
  // show error/update messages
- settings_errors( 'extender_gallery_messages' );
+ settings_errors( $this->plugin.'_messages' );
  ?>
  <div class="wrap">
- <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
- <form action="options.php" method="post">
- <?php
- // output security fields for the registered setting "wporg"
- settings_fields( 'extender_gallery_settings' );
- // output setting sections and their fields
- // (sections are registered for "extender-photo-gallery", each field is registered to a specific section)
- do_settings_sections( 'extender_gallery_settings' );
- // output save settings button
- submit_button( 'Save Settings' );
- ?>
- </form>
+ 	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+ 	<form action="options.php" method="post">
+ 	<?php
+ 
+ 	// output security fields for the registered "extender_gallery"
+ 	settings_fields( $this->plugin );
+ 
+ 	// output setting sections and their fields
+ 	// (sections are registered for "extender_gallery", each field is registered to a specific section)
+ 	do_settings_sections( $this->plugin, $this->plugin.'_admin_section' );
+ 
+ 	// output save settings button
+ 	submit_button( 'Save Settings' );
+ 	?>
+ 	</form>
  </div>

@@ -107,74 +107,74 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// custom option and settings
 		function settings_init() {
-			// register a new setting for "extender-photo-gallery" page
-			register_setting( 'extender_gallery', 'extender_gallery_settings' );
+			// register a new setting for "extender_gallery" page
+			register_setting( $this->plugin, $this->plugin.'_settings' );
 		 
-			// register a new section in the "extender-photo-gallery" page
+			// register a new section in the "extender_gallery" page
 		 	add_settings_section(
-				'extender_admin_section', 
+				$this->plugin.'_admin_section', 
 				__( 'The Simplest Photo Gallery In The World', 'extender-photo-gallery' ), 
-				array($this, 'extender_settings_section_callback'), 
-				'extender_gallery'
+				array( $this, 'settings_section_callback' ), 
+				$this->plugin
 			);
 		
 			add_settings_field( 
-				'extender_text_field', 
+				$this->plugin.'_text_field', 
 				__( 'Text Field', 'extender-photo-gallery' ), 
-				array($this, 'extender_text_field_render'), 
-				'extender_gallery', 
-				'extender_admin_section' 
+				array( $this, 'text_field_render' ), 
+				$this->plugin, 
+				$this->plugin.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				'extender_textarea_field', 
+				$this->plugin.'_textarea_field', 
 				__( 'Textarea Field', 'extender-photo-gallery' ), 
-				array($this, 'extender_textarea_field_render'), 
-				'extender_gallery', 
-				'extender_admin_section' 
+				array( $this, 'textarea_field_render' ), 
+				$this->plugin, 
+				$this->plugin.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				'extender_select_field', 
+				$this->plugin.'_select_field', 
 				__( 'Select Field', 'extender-photo-gallery' ), 
-				array($this, 'extender_select_field_render'), 
-				'extender_gallery', 
-				'extender_admin_section' 
+				array( $this, 'select_field_render' ), 
+				$this->plugin, 
+				$this->plugin.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				'extender_radio_field', 
+				$this->plugin.'_radio_field', 
 				__( 'Radio field description', 'extender-photo-gallery' ), 
-				array($this, 'extender_radio_field_render'), 
-				'extender_gallery', 
-				'extender_admin_section'
+				array( $this, 'radio_field_render' ), 
+				$this->plugin, 
+				$this->plugin.'_admin_section'
 			);
 		
 		}
 		
 		// Text field html callback
-		function extender_text_field_render() { 
-			$options = get_option( 'extender_gallery_options' );
+		function text_field_render() { 
+			$options = get_option( $this->plugin.'_settings' );
 			?>
-			<input type='text' name='extender_settings[extender_text_field]' value='<?php echo esc_attr( $options['extender_text_field'] ); ?>'>
+			<input type='text' name='extender_gallery_settings[extender_text_field]' value='<?php echo esc_attr( $options['extender_text_field'] ); ?>'>
 			<?php
 		}
 		
 		// textarea field html callback
-		function extender_textarea_field_render() { 
-			$options = get_option( 'extender_gallery_options' );
+		function textarea_field_render() { 
+			$options = get_option( $this->plugin.'_settings' );
 			?>
-			<textarea cols='40' rows='5' name='extender_settings[extender_textarea_field_textarea]'> 
+			<textarea cols='40' rows='5' name='extender_gallery_settings[extender_textarea_field_textarea]'> 
 				<?php echo esc_textarea( $options['extender_textarea_field_textarea'] ); ?>
 		 	</textarea>
 			<?php
 		}
 		
 		// select field html callback
-		function extender_select_field_render() { 
-			$options = get_option( 'extender_gallery_options' );
+		function select_field_render() { 
+			$options = get_option( $this->plugin.'_settings' );
 			?>
-			<select name='extender_settings[extender_select_field]'>
+			<select name='extender_gallery_settings[extender_select_field]'>
 				<option value='1' <?php selected( $options['extender_select_field'], 1 ); ?>>Option 1</option>
 				<option value='2' <?php selected( $options['extender_select_field'], 2 ); ?>>Option 2</option>
 				<option value='3' <?php selected( $options['extender_select_field'], 3 ); ?>>Option 3</option>
@@ -184,26 +184,26 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		}
 		
 		// radio field html callback
-		function extender_radio_field_render() { 
-			$options = get_option( 'extender_gallery_options' );
+		function radio_field_render() { 
+			$options = get_option( $this->plugin.'_settings' );
 			?>
-			<input type='radio' name='extender_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 1 ); ?> value='1'> Yes
-			<input type='radio' name='extender_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 0 ); ?> value='0'> No
+			<input type='radio' name='extender_gallery_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 1 ); ?> value='1'> Yes
+			<input type='radio' name='extender_gallery_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 0 ); ?> value='0'> No
 			<?php
 		}
 		
-		function extender_settings_section_callback() { 
+		function settings_section_callback() { 
 			echo __( 'This is the section description', 'extender-photo-gallery' );
 		}
 		
 		// Enqueue js and css files
 		function enqueue() {
 			// Include Litty Library
-			wp_enqueue_style( 'extender_gallery_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
-			wp_enqueue_script( 'extender_gallery_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
+			wp_enqueue_style( $this->plugin.'_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
+			wp_enqueue_script( $this->plugin.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
 			
-			wp_enqueue_style( 'extender_gallery_style', plugins_url( '/assets/style.css', __FILE__ ) );
-			wp_enqueue_script( 'extender_gallery_script', plugins_url( '/assets/script.js', __FILE__ ) );
+			wp_enqueue_style( $this->plugin.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
+			wp_enqueue_script( $this->plugin.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
 		}
 		
 		// Activation run script
