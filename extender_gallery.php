@@ -120,19 +120,58 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// Register our gallery post type
 		function custom_post_type_callback() {
-			register_post_type( $this->slug, array(
-                           'labels'      => array(
-                               'name'          => __('Photo Gallery'),
-                               'singular_name' => __('Photo Gallery'),
-                           ),
-                           'public'      => true,
-                           'has_archive' => true,
-                           'rewrite' => array( 'slug' => 'gallery' )
-                       ) );
+			// Set UI labels for Custom Post Type
+		    $labels = array(
+		        'name'                => _x( 'Gallery', 'Post Type General Name', 'extender-photo-gallery' ),
+		        'singular_name'       => _x( 'Gallery', 'Post Type Singular Name', 'extender-photo-gallery' ),
+		        'menu_name'           => __( 'Gallery', 'extender-photo-gallery' ),
+		        'parent_item_colon'   => __( 'Parent Gallery', 'extender-photo-gallery' ),
+		        'all_items'           => __( 'All Photos', 'extender-photo-gallery' ),
+		        'view_item'           => __( 'View Photo', 'extender-photo-gallery' ),
+		        'add_new_item'        => __( 'Add New Photo', 'extender-photo-gallery' ),
+		        'add_new'             => __( 'Add New', 'extender-photo-gallery' ),
+		        'edit_item'           => __( 'Edit Photo', 'extender-photo-gallery' ),
+		        'update_item'         => __( 'Update Photo', 'extender-photo-gallery' ),
+		        'search_items'        => __( 'Search Photos', 'extender-photo-gallery' ),
+		        'not_found'           => __( 'Not Found', 'extender-photo-gallery' ),
+		        'not_found_in_trash'  => __( 'Not found in Trash', 'extender-photo-gallery' ),
+		    );
+		    
+		    // Set other options for Custom Post Type
+		    $args = array(
+		        'label'               => __( 'Extender Photo Gallery', 'extender-photo-gallery' ),
+		        'description'         => __( 'A Simple Photo Gallery Plugin Using Lity', 'extender-photo-gallery' ),
+		        'labels'              => $labels,
+		        // Features this CPT supports in Post Editor
+		        'supports'            => array( 'title', 'editor', 'thumbnail' ),
+		        // You can associate this CPT with a taxonomy or custom taxonomy. 
+		        //'taxonomies'          => array( 'gallery_types' ),
+		        /* A hierarchical CPT is like Pages and can have
+		        * Parent and child items. A non-hierarchical CPT
+		        * is like Posts.
+		        */ 
+		        'hierarchical'        => false,
+		        'public'              => true,
+		        'show_ui'             => true,
+		        'show_in_menu'        => true,
+		        'show_in_nav_menus'   => true,
+		        'show_in_admin_bar'   => true,
+		        'menu_position'       => 110,
+		        'can_export'          => true,
+		        'has_archive'         => true,
+		        'exclude_from_search' => false,
+		        'publicly_queryable'  => true,
+		        'capability_type'     => 'page',
+		    );
+    
+			register_post_type( $this->slug, $args );
 		}
 		
 		// custom option and settings
 		function settings_init() {
+			
+			$options = array();
+			
 			// register a new section in the "extender_gallery" page
 		 	add_settings_section(
 				$this->slug.'_admin_section', 
@@ -149,6 +188,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
+			register_setting( $this->settings, $this->slug.'_text_field', array( $this, 'sanitize_data' ) );
 			
 			// register a textarea field
 			add_settings_field( 
@@ -158,6 +198,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
+			register_setting( $this->settings, $this->slug.'_textarea_field', array( $this, 'sanitize_data' ) );
 			
 			// register a select field
 			add_settings_field( 
@@ -167,6 +208,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
+			register_setting( $this->settings, $this->slug.'_select_field', array( $this, 'sanitize_data' ) );
 			
 			// register a radio field
 			add_settings_field( 
@@ -176,17 +218,16 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section'
 			);
-			
-			// register a new setting for "extender_gallery_options" page
-			register_setting( $this->settings, $this->options, array( $this, 'sanitize_data' ) );
+			register_setting( $this->settings, $this->slug.'_radio_field', array( $this, 'sanitize_data' ) );
 		 
 		}
 		
 		// Sanitize your data
 		function sanitize_data( $input ) {
-			
-			if ( ! is_array( $input ) ) return;
 						
+			// Retrieve the options.
+			$output = get_option( $this->options );
+									
 			if( isset( $input[$this->slug.'_text_field'] ) ) {
 				$output[$this->slug.'_text_field'] = sanitize_text_field( $input[$this->slug.'_text_field'] );
 			}
@@ -209,17 +250,17 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// Text field html callback
 		function text_field_render() { 
-			$options = get_option( $this->slug.'_settings' );
+			$options = get_option( $this->options );
 			?>
-			<input type='text' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_text_field]' value='<?php echo esc_attr( $options[$this->slug.'_text_field'] ); ?>'>
+			<input type='text' name='<?php echo $this->options; ?>[<?php echo $this->slug; ?>_text_field]' value='<?php echo esc_attr( $options[$this->slug.'_text_field'] ); ?>'>
 			<?php
 		}
 		
 		// textarea field html callback
 		function textarea_field_render() { 
-			$options = get_option( $this->slug.'_settings' );
+			$options = get_option( $this->options );
 			?>
-			<textarea cols='40' rows='5' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_textarea_field]'> 
+			<textarea cols='40' rows='5' name='<?php echo $this->options; ?>[<?php echo $this->slug; ?>_textarea_field]'> 
 				<?php echo esc_textarea( $options[$this->slug.'_textarea_field'] ); ?>
 		 	</textarea>
 			<?php
@@ -227,9 +268,9 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// select field html callback
 		function select_field_render() { 
-			$options = get_option( $this->slug.'_settings' );
+			$options = get_option( $this->options );
 			?>
-			<select name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_select_field]'>
+			<select name='<?php echo $this->options; ?>[<?php echo $this->slug; ?>_select_field]'>
 				<option value='option1' <?php selected( $options[$this->slug.'_select_field'], 'option1' ); ?>>Option 1</option>
 				<option value='option2' <?php selected( $options[$this->slug.'_select_field'], 'option2' ); ?>>Option 2</option>
 				<option value='option3' <?php selected( $options[$this->slug.'_select_field'], 'option3' ); ?>>Option 3</option>
@@ -240,10 +281,10 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// radio field html callback
 		function radio_field_render() { 
-			$options = get_option( $this->slug.'_settings' );
+			$options = get_option( $this->options );
 			?>
-			<input type='radio' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 1 ); ?> value='1'> Yes
-			<input type='radio' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 0 ); ?> value='0'> No
+			<input type='radio' name='<?php echo $this->options; ?>[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 1 ); ?> value='1'> Yes
+			<input type='radio' name='<?php echo $this->options; ?>[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 0 ); ?> value='0'> No
 			<?php
 		}
 		
@@ -257,8 +298,8 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			wp_enqueue_style( $this->slug.'_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
 			wp_enqueue_script( $this->slug.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
 			
-			// Only enqueue for admin users
-			if (is_admin()) {
+			// Only enqueue for admin users and on plugin settings screen
+			if( is_admin() && get_current_screen()->id == 'extender-photo-gallery_page_extender_gallery_options' ) {
 				wp_enqueue_style( $this->slug.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
 				wp_enqueue_script( $this->slug.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
 			}
