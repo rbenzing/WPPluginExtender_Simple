@@ -78,14 +78,14 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			
 			// register our admin sidebar menu link and plugin page settings link
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
-			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
+			add_filter( "plugin_action_links_$this->slug", array( $this, 'settings_link' ) );
 			
 			// register our settings_init to the admin_init action hook
 		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
 		}
 		
 		public function settings_link( $links ) {
-			$settings_link = '<a href="admin.php?page='.$this->slug.'_options">Settings</a>';
+			$settings_link = '<a href="admin.php?page='.$this->options.'">Settings</a>';
 			array_push( $links, $settings_link );
 			return $links;
 		}
