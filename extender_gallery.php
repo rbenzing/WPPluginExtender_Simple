@@ -33,14 +33,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Copyright 2005-2015 Automattic, Inc.
 */
  
-defined( 'ABSPATH' ) or die('Hack Attempt');
+defined( 'WPINC' ) or die('Hack Attempt'); // Can also use ABSPATH
 
 define( 'PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /*
 Using Composer (Dependency Manager) you can autoload your plugin classes to make
-development easier You would need to remove all requires/includes and change your
+development easier. You would need to remove all requires/includes and change your
 file structure to use a namespace PSR-4 structure. Learn more by visiting
 http://getcomposer.org
 
@@ -61,7 +61,13 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		}
 		
 		function register() {
+			// register our extender_gallery_settings_init to the admin_init action hook
+		 	add_action( 'admin_init', 'extender_gallery_settings_init' );
+		 	
+		 	// register our scripts and styles
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+			
+			// register our admin sidebar menu link and plugin page settings link
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
 		}
@@ -92,8 +98,67 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			register_post_type( 'extender_gallery', ['public' => true, 'label' => 'Extender Photo Gallery'] );
 		}
 		
+		// custom option and settings
+		function extender_gallery_settings_init() {
+			// register a new setting for "extender-photo-gallery" page
+			register_setting( 'extender_gallery', 'extender_gallery_options' );
+		 
+			// register a new section in the "extender-photo-gallery" page
+		 	add_settings_section( 'extender_gallery_section_developers', __( 'The Matrix has you.', 'extender-photo-gallery' ), 'extender_gallery_section_developers_cb', 'extender_gallery' );
+		 
+		 	// register a new field in the "extender_gallery_section_developers" section, inside the "extender-photo-gallery" page
+		 	add_settings_field( 'extender_gallery_field_pill', // as of WP 4.6 this value is used only internally
+		 	// use $args' label_for to populate the id inside the callback
+		 	__( 'Pill', 'extender-photo-gallery' ), 'extender_gallery_field_pill_cb', 'extender_gallery', 'extender_gallery_section_developers', [ 'label_for' => 'extender_gallery_field_pill', 'class' => 'extender_gallery_row', 'extender_gallery_custom_data' => 'custom' ] );
+		}
+		
+		/*
+		* section callbacks can accept an $args parameter, which is an array.
+		* $args have the following keys defined: title, id, callback.
+		* the values are defined at the add_settings_section() function.
+		*/
+		function extender_gallery_section_developers_cb( $args ) {
+		?>
+			<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'Follow the white rabbit.', 'extender-photo-gallery' ); ?></p>
+		<?php
+		}
+		 
+		/* 
+		* field callbacks can accept an $args parameter, which is an array.
+		* $args is defined at the add_settings_field() function.
+		* wordpress has magic interaction with the following keys: label_for, class.
+		* the "label_for" key value is used for the "for" attribute of the <label>.
+		* the "class" key value is used for the "class" attribute of the <tr> containing the field.
+		* you can add custom key value pairs to be used inside your callbacks.
+		*/
+		function extender_gallery_field_pill_cb( $args ) {
+			// get the value of the setting we've registered with register_setting()
+			$options = get_option( 'extender_gallery_options' );
+			// output the field
+			?>
+			<select id="<?php echo esc_attr( $args['label_for'] ); ?>" data-custom="<?php echo esc_attr( $args['extender_gallery_custom_data'] ); ?>" name="extender_gallery_options[<?php echo esc_attr( $args['label_for'] ); ?>]">
+		 		<option value="red" <?php echo isset( $options[ $args['label_for'] ] ) ? ( selected( $options[ $args['label_for'] ], 'red', false ) ) : ( '' ); ?>>
+		 			<?php esc_html_e( 'red pill', 'extender-photo-gallery' ); ?>
+		 		</option>
+		 		<option value="blue" <?php echo isset( $options[ $args['label_for'] ] ) ? ( selected( $options[ $args['label_for'] ], 'blue', false ) ) : ( '' ); ?>>
+		 			<?php esc_html_e( 'blue pill', 'extender-photo-gallery' ); ?>
+		 		</option>
+		 	</select>
+		 	<p class="description">
+		 		<?php esc_html_e( 'You take the blue pill and the story ends. You wake in your bed and you believe whatever you want to believe.', 'extender-photo-gallery' ); ?>
+			</p>
+		 	<p class="description">
+		 		<?php esc_html_e( 'You take the red pill and you stay in Wonderland and I show you how deep the rabbit-hole goes.', 'extender-photo-gallery' ); ?>
+			</p>
+		<?php
+		}
+		
 		// Enqueue js and css files
 		function enqueue() {
+			// Include Litty Library
+			wp_enqueue_style( 'extender_gallery_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
+			wp_enqueue_script( 'extender_gallery_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
+			
 			wp_enqueue_style( 'extender_gallery_style', plugins_url( '/assets/style.css', __FILE__ ) );
 			wp_enqueue_script( 'extender_gallery_script', plugins_url( '/assets/script.js', __FILE__ ) );
 		}
