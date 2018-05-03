@@ -133,9 +133,6 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// custom option and settings
 		function settings_init() {
-			// register a new setting for "extender_gallery" page
-			register_setting( $this->settings, $this->options, array( $this, 'sanitize_data' ) );
-		 
 			// register a new section in the "extender_gallery" page
 		 	add_settings_section(
 				$this->slug.'_admin_section', 
@@ -143,7 +140,8 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				array( $this, 'settings_section_callback' ), 
 				$this->options
 			);
-		
+			
+			// register a text field
 			add_settings_field( 
 				$this->slug.'_text_field', 
 				__( 'Text Field', 'extender-photo-gallery' ), 
@@ -151,7 +149,8 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
-		
+			
+			// register a textarea field
 			add_settings_field( 
 				$this->slug.'_textarea_field', 
 				__( 'Textarea Field', 'extender-photo-gallery' ), 
@@ -159,7 +158,8 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
-		
+			
+			// register a select field
 			add_settings_field( 
 				$this->slug.'_select_field', 
 				__( 'Select Field', 'extender-photo-gallery' ), 
@@ -167,7 +167,8 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section' 
 			);
-		
+			
+			// register a radio field
 			add_settings_field( 
 				$this->slug.'_radio_field', 
 				__( 'Radio field description', 'extender-photo-gallery' ), 
@@ -175,10 +176,16 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 				$this->options, 
 				$this->slug.'_admin_section'
 			);
+			
+			// register a new setting for "extender_gallery_options" page
+			register_setting( $this->settings, $this->options, array( $this, 'sanitize_data' ) );
+		 
 		}
 		
 		// Sanitize your data
 		function sanitize_data( $input ) {
+			
+			if ( ! is_array( $input ) ) return;
 						
 			if( isset( $input[$this->slug.'_text_field'] ) ) {
 				$output[$this->slug.'_text_field'] = sanitize_text_field( $input[$this->slug.'_text_field'] );
@@ -250,8 +257,11 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			wp_enqueue_style( $this->slug.'_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
 			wp_enqueue_script( $this->slug.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
 			
-			wp_enqueue_style( $this->slug.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
-			wp_enqueue_script( $this->slug.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
+			// Only enqueue for admin users
+			if (is_admin()) {
+				wp_enqueue_style( $this->slug.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
+				wp_enqueue_script( $this->slug.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
+			}
 		}
 		
 		// Activation run script
