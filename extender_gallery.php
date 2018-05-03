@@ -80,6 +80,9 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
 			
+			// Run our register custom post type on WordPress initialization
+		 	add_action( 'init', array( $this, 'custom_post_type_callback' ) );
+		 	
 			// register our settings_init to the admin_init action hook
 		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
 		}
@@ -93,14 +96,11 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		// Add our admin menu to WordPress admin sidebar with a custom icon and positioned last.
 		public function add_admin_page() {
 			
-			// Add our Main Menu for our Plugin ( we could add a page just replacing '' with "array( $this, 'admin_index_page' )" )
-			add_menu_page( __( 'Extender Photo Gallery Admin', 'extender-photo-gallery' ), __( 'Extender Photo Gallery', 'extender-photo-gallery' ), 'manage_options', $this->slug, '', 'dashicons-images-alt', 110 );
+			// Add our Settings Submenu for our Plugin
+			add_submenu_page( 'edit.php?post_type='.$this->slug, __( 'Extender Photo Gallery', 'extender-photo-gallery' ), __( 'Welcome', 'extender-photo-gallery' ), 'manage_options', $this->slug, array( $this, 'admin_index_page' ) );
 			
 			// Add our Settings Submenu for our Plugin
-			add_submenu_page( $this->slug, __( 'Extender Photo Gallery', 'extender-photo-gallery' ), __( 'Welcome', 'extender-photo-gallery' ), 'manage_options', $this->slug, array( $this, 'admin_index_page' ) );
-			
-			// Add our Settings Submenu for our Plugin
-			add_submenu_page( $this->slug, __( 'Extender Photo Gallery Settings', 'extender-photo-gallery' ), __( 'Settings', 'extender-photo-gallery' ), 'manage_options', $this->options, array( $this, 'admin_options_page' ) );
+			add_submenu_page( 'edit.php?post_type='.$this->slug, __( 'Extender Photo Gallery Settings', 'extender-photo-gallery' ), __( 'Settings', 'extender-photo-gallery' ), 'manage_options', $this->options, array( $this, 'admin_options_page' ) );
 		}
 		
 		// Callback for submenu options page
@@ -113,71 +113,64 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			require_once PLUGIN_PATH . 'templates/welcome.php';
 		}
 		
-		// Run our register custom post type on WordPress initialization
-		protected function create_post_type() {
-			add_action( 'init', array( $this, 'custom_post_type_callback' ), 10 );
-		}
-		
-		// Adds capabilities for our custom post type
-	    function add_theme_caps() {
-		    // gets the administrator role
-		    $admins = get_role( 'administrator' );
-		    $admins->add_cap( 'edit_gallery' ); 
-		    $admins->add_cap( 'edit_galleries' ); 
-		    $admins->add_cap( 'edit_other_galleries' ); 
-		    $admins->add_cap( 'publish_galleries' ); 
-		    $admins->add_cap( 'read_gallery' ); 
-		    $admins->add_cap( 'read_private_galleries' ); 
-		    $admins->add_cap( 'delete_gallery' ); 
-		}
-		
 		// Register our gallery post type
 		function custom_post_type_callback() {
-			// Set UI labels for our cpt
-		    $labels = array( 
-			    'name' => _x( 'Galleries', 'gallery' ),
-			    'singular_name' => _x( 'Gallery', 'gallery' ),
-			    'add_new' => _x( 'Add New', 'gallery' ),
-			    'add_new_item' => _x( 'Add New Gallery', 'gallery' ),
-			    'edit_item' => _x( 'Edit Gallery', 'gallery' ),
-			    'new_item' => _x( 'New Gallery', 'gallery' ),
-			    'view_item' => _x( 'View Gallery', 'gallery' ),
-			    'search_items' => _x( 'Search Galleries', 'gallery' ),
-			    'not_found' => _x( 'No galleries found', 'gallery' ),
-			    'not_found_in_trash' => _x( 'No galleries found in Trash', 'gallery' ),
-			    'parent_item_colon' => _x( 'Parent Gallery:', 'gallery' ),
-			    'menu_name' => _x( 'Galleries', 'gallery' ),
+		
+			$labels = array(
+				'name'                  => _x( 'Gallery Photos', 'Post Type General Name', 'extender-photo-gallery' ),
+				'singular_name'         => _x( 'Gallery Photo', 'Post Type Singular Name', 'extender-photo-gallery' ),
+				'menu_name'             => __( 'Extender Photo Gallery', 'extender-photo-gallery' ),
+				'name_admin_bar'        => __( 'Post Type', 'extender-photo-gallery' ),
+				'archives'              => __( 'Item Archives', 'extender-photo-gallery' ),
+				'attributes'            => __( 'Item Attributes', 'extender-photo-gallery' ),
+				'parent_item_colon'     => __( 'Parent Photo:', 'extender-photo-gallery' ),
+				'all_items'             => __( 'All Photos', 'extender-photo-gallery' ),
+				'add_new_item'          => __( 'Add New Photo', 'extender-photo-gallery' ),
+				'add_new'               => __( 'Add Photo', 'extender-photo-gallery' ),
+				'new_item'              => __( 'New Photo', 'extender-photo-gallery' ),
+				'edit_item'             => __( 'Edit Photo', 'extender-photo-gallery' ),
+				'update_item'           => __( 'Update Photo', 'extender-photo-gallery' ),
+				'view_item'             => __( 'View Photo', 'extender-photo-gallery' ),
+				'view_items'            => __( 'View Photos', 'extender-photo-gallery' ),
+				'search_items'          => __( 'Search Photos', 'extender-photo-gallery' ),
+				'not_found'             => __( 'Not found', 'extender-photo-gallery' ),
+				'not_found_in_trash'    => __( 'Not found in Trash', 'extender-photo-gallery' ),
+				'featured_image'        => __( 'Featured Image', 'extender-photo-gallery' ),
+				'set_featured_image'    => __( 'Set featured image', 'extender-photo-gallery' ),
+				'remove_featured_image' => __( 'Remove featured image', 'extender-photo-gallery' ),
+				'use_featured_image'    => __( 'Use as featured image', 'extender-photo-gallery' ),
+				'insert_into_item'      => __( 'Insert into item', 'extender-photo-gallery' ),
+				'uploaded_to_this_item' => __( 'Uploaded to this item', 'extender-photo-gallery' ),
+				'items_list'            => __( 'Items list', 'extender-photo-gallery' ),
+				'items_list_navigation' => __( 'Items list navigation', 'extender-photo-gallery' ),
+				'filter_items_list'     => __( 'Filter items list', 'extender-photo-gallery' ),
 			);
-		    
-		    // Set arguments for our cpt
-		    $args = array( 
-			    'labels' => $labels,
-			    'hierarchical' => true,
-			    'description' => 'A simple photo gallery for WordPress using Lity',
-			    'supports' => array( 'title', 'editor', 'thumbnail'),
-			    'public' => true,
-			    'show_ui' => true,
-			    'show_in_menu' => true,
-			    'menu_icon' => '',
-			    'show_in_nav_menus' => true,
-			    'publicly_queryable' => true,
-			    'exclude_from_search' => true,
-			    'has_archive' => true,
-			    'query_var' => true,
-			    'can_export' => true,
-			    'rewrite' => true,
-			    'capability_type' => $this->slug,
-			    'map_meta_cap' => false
+			$args = array(
+				'label'                 => __( 'Gallery Photo', 'extender-photo-gallery' ),
+				'description'           => __( 'A simple photo gallery for WordPress using Lity', 'extender-photo-gallery' ),
+				'labels'                => $labels,
+				'supports'              => array( 'title', 'editor', 'thumbnail' ),
+				'taxonomies'            => array( 'category' ),
+				'hierarchical'          => false,
+				'public'                => true,
+				'show_ui'               => true,
+				'show_in_menu'          => true,
+				'menu_position'         => 100,
+				'menu_icon'             => 'dashicons-images-alt',
+				'show_in_admin_bar'     => false,
+				'show_in_nav_menus'     => true,
+				'can_export'            => true,
+				'has_archive'           => false,
+				'exclude_from_search'   => true,
+				'publicly_queryable'    => true,
+				'capability_type'       => 'page',
 			);
-    
-			register_post_type( $this->slug, $args );
+			register_post_type( 'extender_gallery', $args );
+		
 		}
 		
 		// custom option and settings
 		function settings_init() {
-			
-			// Register plugin cpt capabilities
-			$this->add_theme_caps();
 			
 			$options = array();
 			
@@ -308,7 +301,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			wp_enqueue_script( $this->slug.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
 			
 			// Only enqueue for admin users and on plugin settings screen
-			if( is_admin() && get_current_screen()->id == 'extender-photo-gallery_page_extender_gallery_options' ) {
+			if( is_admin() && get_current_screen()->id == 'extender_gallery_page_extender_gallery_options' ) {
 				wp_enqueue_style( $this->slug.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
 				wp_enqueue_script( $this->slug.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
 			}

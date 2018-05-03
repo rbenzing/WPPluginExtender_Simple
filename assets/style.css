@@ -1,12 +1,12 @@
 /* Color the background of the settings page */
-.extender-photo-gallery_page_extender_gallery_options #wpwrap { background-color: #8888e1; }
-.extender-photo-gallery_page_extender_gallery_options #wpcontent { background-image: url('img/wp.png'); background-position: right bottom; background-repeat: no-repeat; }
+.extender_gallery_page_extender_gallery_options #wpwrap { background-color: #8888e1; }
+.extender_gallery_page_extender_gallery_options #wpcontent { background-image: url('img/wp.png'); background-position: right bottom; background-repeat: no-repeat; }
 
 /* Color the Menu Arrow */
 ul#adminmenu a.wp-has-current-submenu:after, 
 ul#adminmenu>li.current>a.current:after { border-right-color: #8888e1 !important; }
 
 /* Color the Form Text, h1, h2 */
-.extender-photo-gallery_page_extender_gallery_options .form-table th { color: #fff; }
-.extender-photo-gallery_page_extender_gallery_options h1 { color: #fff; }
-.extender-photo-gallery_page_extender_gallery_options h2 { color: #fff; }
+.extender_gallery_page_extender_gallery_options .form-table th { color: #fff; }
+.extender_gallery_page_extender_gallery_options h1 { color: #fff; }
+.extender_gallery_page_extender_gallery_options h2 { color: #fff; }
