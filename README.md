@@ -194,3 +194,5 @@ WordPress Plugin Boilerplate - http://wppb.io/
 Admin Page Class - https://github.com/bainternet/Admin-Page-Class/
 
 WordPress Debug Bar - https://wpadverts.com/blog/wordpress-debug-bar-plugin-blackbox/
+
+Generate WP - https://generatewp.com
