@@ -47,7 +47,6 @@ http://getcomposer.org
 if( file_exists( PLUGIN_PATH . '/vendor/autoload.php' ) ) {
 	require_once PLUGIN_PATH . '/vendor/autoload.php';
 }
- 
 */
 
 if(!class_exists('WPPluginExtenderPhotoGallery')) {
@@ -55,9 +54,22 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 	class WPPluginExtenderPhotoGallery {
 		
 		public $plugin;
+		public $slug;
+		private $settings;
+		private $options;
 		
 		function __construct() {
+			
+			// Register variable for plugin file
 			$this->plugin = plugin_basename( __FILE__ );
+			
+			// Register variable for plugin slug
+			$info = pathinfo( __FILE__ );
+			$this->slug = basename( __FILE__, '.'.$info['extension'] );
+			
+			// Register settings & options variables
+			$this->settings = $this->slug.'_settings';
+			$this->options = $this->slug.'_options';
 		}
 		
 		function register() {
@@ -68,24 +80,37 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
 			
-			// register our extender_gallery_settings_init to the admin_init action hook
+			// register our settings_init to the admin_init action hook
 		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
 		}
 		
 		public function settings_link( $links ) {
-			$settings_link = '<a href="admin.php?page=extender_gallery">Settings</a>';
+			$settings_link = '<a href="admin.php?page='.$this->slug.'_options">Settings</a>';
 			array_push( $links, $settings_link );
 			return $links;
 		}
 		
 		// Add our admin menu to WordPress admin sidebar with a custom icon and positioned last.
 		public function add_admin_page() {
-			add_menu_page( 'Extender Photo Gallery Admin', 'Extender Photo Gallery', 'manage_options', 'extender_gallery', array( $this, 'admin_index_page' ), 'dashicons-images-alt', 110 );
+			
+			// Add our Main Menu for our Plugin ( we could add a page just replacing '' with "array( $this, 'admin_index_page' )" )
+			add_menu_page( __( 'Extender Photo Gallery Admin', 'extender-photo-gallery' ), __( 'Extender Photo Gallery', 'extender-photo-gallery' ), 'manage_options', $this->slug, '', 'dashicons-images-alt', 110 );
+			
+			// Add our Settings Submenu for our Plugin
+			add_submenu_page( $this->slug, __( 'Extender Photo Gallery', 'extender-photo-gallery' ), __( 'Welcome', 'extender-photo-gallery' ), 'manage_options', $this->slug, array( $this, 'admin_index_page' ) );
+			
+			// Add our Settings Submenu for our Plugin
+			add_submenu_page( $this->slug, __( 'Extender Photo Gallery Settings', 'extender-photo-gallery' ), __( 'Settings', 'extender-photo-gallery' ), 'manage_options', $this->options, array( $this, 'admin_options_page' ) );
+		}
+		
+		// Callback for submenu options page
+		public function admin_options_page() {
+			require_once PLUGIN_PATH . 'templates/admin.php';
 		}
 		
 		// Callback for displaying our admin html page
 		public function admin_index_page() {
-			require_once PLUGIN_PATH . 'templates/admin.php';
+			require_once PLUGIN_PATH . 'templates/welcome.php';
 		}
 		
 		// Run our register custom post type on WordPress initialization
@@ -95,100 +120,123 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// Register our gallery post type
 		function custom_post_type_callback() {
-			register_post_type( 'extender_gallery', array(
+			register_post_type( $this->slug, array(
                            'labels'      => array(
                                'name'          => __('Photo Gallery'),
                                'singular_name' => __('Photo Gallery'),
                            ),
                            'public'      => true,
                            'has_archive' => true,
+                           'rewrite' => array( 'slug' => 'gallery' )
                        ) );
 		}
 		
 		// custom option and settings
 		function settings_init() {
 			// register a new setting for "extender_gallery" page
-			register_setting( $this->plugin, $this->plugin.'_settings' );
+			register_setting( $this->settings, $this->options, array( $this, 'sanitize_data' ) );
 		 
 			// register a new section in the "extender_gallery" page
 		 	add_settings_section(
-				$this->plugin.'_admin_section', 
-				__( 'The Simplest Photo Gallery In The World', 'extender-photo-gallery' ), 
+				$this->slug.'_admin_section', 
+				__( 'Settings Section Title', 'extender-photo-gallery' ), 
 				array( $this, 'settings_section_callback' ), 
-				$this->plugin
+				$this->options
 			);
 		
 			add_settings_field( 
-				$this->plugin.'_text_field', 
+				$this->slug.'_text_field', 
 				__( 'Text Field', 'extender-photo-gallery' ), 
-				array( $this, 'text_field_render' ), 
-				$this->plugin, 
-				$this->plugin.'_admin_section' 
+				array( $this, 'text_field_render' ),
+				$this->options, 
+				$this->slug.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				$this->plugin.'_textarea_field', 
+				$this->slug.'_textarea_field', 
 				__( 'Textarea Field', 'extender-photo-gallery' ), 
 				array( $this, 'textarea_field_render' ), 
-				$this->plugin, 
-				$this->plugin.'_admin_section' 
+				$this->options, 
+				$this->slug.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				$this->plugin.'_select_field', 
+				$this->slug.'_select_field', 
 				__( 'Select Field', 'extender-photo-gallery' ), 
 				array( $this, 'select_field_render' ), 
-				$this->plugin, 
-				$this->plugin.'_admin_section' 
+				$this->options, 
+				$this->slug.'_admin_section' 
 			);
 		
 			add_settings_field( 
-				$this->plugin.'_radio_field', 
+				$this->slug.'_radio_field', 
 				__( 'Radio field description', 'extender-photo-gallery' ), 
 				array( $this, 'radio_field_render' ), 
-				$this->plugin, 
-				$this->plugin.'_admin_section'
+				$this->options, 
+				$this->slug.'_admin_section'
 			);
-		
 		}
+		
+		// Sanitize your data
+		function sanitize_data( $input ) {
+						
+			if( isset( $input[$this->slug.'_text_field'] ) ) {
+				$output[$this->slug.'_text_field'] = sanitize_text_field( $input[$this->slug.'_text_field'] );
+			}
+			
+			if( isset( $input[$this->slug.'_textarea_field'] ) ) {
+				$output[$this->slug.'_textarea_field'] = sanitize_textarea_field( $input[$this->slug.'_textarea_field'] );
+			}
+			
+			if( isset( $input[$this->slug.'_select_field'] ) ) {
+				$output[$this->slug.'_select_field'] = sanitize_text_field( $input[$this->slug.'_select_field'] );
+			}
+			
+			if( isset( $input[$this->slug.'_radio_field'] ) ) {
+				// You could also use "intval()" php function to make sure the variable is integer.
+				$output[$this->slug.'_radio_field'] = filter_var( $input[$this->slug.'_radio_field'], FILTER_SANITIZE_NUMBER_INT );
+			}
+			
+			return $output;
+		} 
 		
 		// Text field html callback
 		function text_field_render() { 
-			$options = get_option( $this->plugin.'_settings' );
+			$options = get_option( $this->slug.'_settings' );
 			?>
-			<input type='text' name='extender_gallery_settings[extender_text_field]' value='<?php echo esc_attr( $options['extender_text_field'] ); ?>'>
+			<input type='text' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_text_field]' value='<?php echo esc_attr( $options[$this->slug.'_text_field'] ); ?>'>
 			<?php
 		}
 		
 		// textarea field html callback
 		function textarea_field_render() { 
-			$options = get_option( $this->plugin.'_settings' );
+			$options = get_option( $this->slug.'_settings' );
 			?>
-			<textarea cols='40' rows='5' name='extender_gallery_settings[extender_textarea_field_textarea]'> 
-				<?php echo esc_textarea( $options['extender_textarea_field_textarea'] ); ?>
+			<textarea cols='40' rows='5' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_textarea_field]'> 
+				<?php echo esc_textarea( $options[$this->slug.'_textarea_field'] ); ?>
 		 	</textarea>
 			<?php
 		}
 		
 		// select field html callback
 		function select_field_render() { 
-			$options = get_option( $this->plugin.'_settings' );
+			$options = get_option( $this->slug.'_settings' );
 			?>
-			<select name='extender_gallery_settings[extender_select_field]'>
-				<option value='1' <?php selected( $options['extender_select_field'], 1 ); ?>>Option 1</option>
-				<option value='2' <?php selected( $options['extender_select_field'], 2 ); ?>>Option 2</option>
-				<option value='3' <?php selected( $options['extender_select_field'], 3 ); ?>>Option 3</option>
-				<option value='4' <?php selected( $options['extender_select_field'], 4 ); ?>>Option 4</option>
+			<select name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_select_field]'>
+				<option value='option1' <?php selected( $options[$this->slug.'_select_field'], 'option1' ); ?>>Option 1</option>
+				<option value='option2' <?php selected( $options[$this->slug.'_select_field'], 'option2' ); ?>>Option 2</option>
+				<option value='option3' <?php selected( $options[$this->slug.'_select_field'], 'option3' ); ?>>Option 3</option>
+				<option value='option4' <?php selected( $options[$this->slug.'_select_field'], 'option4' ); ?>>Option 4</option>
 			</select>
 			<?php
 		}
 		
 		// radio field html callback
 		function radio_field_render() { 
-			$options = get_option( $this->plugin.'_settings' );
+			$options = get_option( $this->slug.'_settings' );
 			?>
-			<input type='radio' name='extender_gallery_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 1 ); ?> value='1'> Yes
-			<input type='radio' name='extender_gallery_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 0 ); ?> value='0'> No
+			<input type='radio' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 1 ); ?> value='1'> Yes
+			<input type='radio' name='<?php echo $this->slug; ?>_settings[<?php echo $this->slug; ?>_radio_field]' <?php checked( $options[$this->slug.'_radio_field'], 0 ); ?> value='0'> No
 			<?php
 		}
 		
@@ -199,11 +247,11 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		// Enqueue js and css files
 		function enqueue() {
 			// Include Litty Library
-			wp_enqueue_style( $this->plugin.'_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
-			wp_enqueue_script( $this->plugin.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
+			wp_enqueue_style( $this->slug.'_lity_style', plugins_url( '/assets/lity.min.css', __FILE__ ) );
+			wp_enqueue_script( $this->slug.'_lity_script', plugins_url( '/assets/lity.min.js', __FILE__ ) );
 			
-			wp_enqueue_style( $this->plugin.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
-			wp_enqueue_script( $this->plugin.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
+			wp_enqueue_style( $this->slug.'_style', plugins_url( '/assets/style.css', __FILE__ ) );
+			wp_enqueue_script( $this->slug.'_script', plugins_url( '/assets/script.js', __FILE__ ) );
 		}
 		
 		// Activation run script
