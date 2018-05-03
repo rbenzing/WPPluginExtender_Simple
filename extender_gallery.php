@@ -78,7 +78,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 			
 			// register our admin sidebar menu link and plugin page settings link
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
-			add_filter( "plugin_action_links_$this->slug", array( $this, 'settings_link' ) );
+			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
 			
 			// register our settings_init to the admin_init action hook
 		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
@@ -115,60 +115,69 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// Run our register custom post type on WordPress initialization
 		protected function create_post_type() {
-			add_action( 'init', array( $this, 'custom_post_type_callback' ) );
+			add_action( 'init', array( $this, 'custom_post_type_callback' ), 10 );
+		}
+		
+		// Adds capabilities for our custom post type
+	    function add_theme_caps() {
+		    // gets the administrator role
+		    $admins = get_role( 'administrator' );
+		    $admins->add_cap( 'edit_gallery' ); 
+		    $admins->add_cap( 'edit_galleries' ); 
+		    $admins->add_cap( 'edit_other_galleries' ); 
+		    $admins->add_cap( 'publish_galleries' ); 
+		    $admins->add_cap( 'read_gallery' ); 
+		    $admins->add_cap( 'read_private_galleries' ); 
+		    $admins->add_cap( 'delete_gallery' ); 
 		}
 		
 		// Register our gallery post type
 		function custom_post_type_callback() {
-			// Set UI labels for Custom Post Type
-		    $labels = array(
-		        'name'                => _x( 'Gallery', 'Post Type General Name', 'extender-photo-gallery' ),
-		        'singular_name'       => _x( 'Gallery', 'Post Type Singular Name', 'extender-photo-gallery' ),
-		        'menu_name'           => __( 'Gallery', 'extender-photo-gallery' ),
-		        'parent_item_colon'   => __( 'Parent Gallery', 'extender-photo-gallery' ),
-		        'all_items'           => __( 'All Photos', 'extender-photo-gallery' ),
-		        'view_item'           => __( 'View Photo', 'extender-photo-gallery' ),
-		        'add_new_item'        => __( 'Add New Photo', 'extender-photo-gallery' ),
-		        'add_new'             => __( 'Add New', 'extender-photo-gallery' ),
-		        'edit_item'           => __( 'Edit Photo', 'extender-photo-gallery' ),
-		        'update_item'         => __( 'Update Photo', 'extender-photo-gallery' ),
-		        'search_items'        => __( 'Search Photos', 'extender-photo-gallery' ),
-		        'not_found'           => __( 'Not Found', 'extender-photo-gallery' ),
-		        'not_found_in_trash'  => __( 'Not found in Trash', 'extender-photo-gallery' ),
-		    );
+			// Set UI labels for our cpt
+		    $labels = array( 
+			    'name' => _x( 'Galleries', 'gallery' ),
+			    'singular_name' => _x( 'Gallery', 'gallery' ),
+			    'add_new' => _x( 'Add New', 'gallery' ),
+			    'add_new_item' => _x( 'Add New Gallery', 'gallery' ),
+			    'edit_item' => _x( 'Edit Gallery', 'gallery' ),
+			    'new_item' => _x( 'New Gallery', 'gallery' ),
+			    'view_item' => _x( 'View Gallery', 'gallery' ),
+			    'search_items' => _x( 'Search Galleries', 'gallery' ),
+			    'not_found' => _x( 'No galleries found', 'gallery' ),
+			    'not_found_in_trash' => _x( 'No galleries found in Trash', 'gallery' ),
+			    'parent_item_colon' => _x( 'Parent Gallery:', 'gallery' ),
+			    'menu_name' => _x( 'Galleries', 'gallery' ),
+			);
 		    
-		    // Set other options for Custom Post Type
-		    $args = array(
-		        'label'               => __( 'Extender Photo Gallery', 'extender-photo-gallery' ),
-		        'description'         => __( 'A Simple Photo Gallery Plugin Using Lity', 'extender-photo-gallery' ),
-		        'labels'              => $labels,
-		        // Features this CPT supports in Post Editor
-		        'supports'            => array( 'title', 'editor', 'thumbnail' ),
-		        // You can associate this CPT with a taxonomy or custom taxonomy. 
-		        //'taxonomies'          => array( 'gallery_types' ),
-		        /* A hierarchical CPT is like Pages and can have
-		        * Parent and child items. A non-hierarchical CPT
-		        * is like Posts.
-		        */ 
-		        'hierarchical'        => false,
-		        'public'              => true,
-		        'show_ui'             => true,
-		        'show_in_menu'        => true,
-		        'show_in_nav_menus'   => true,
-		        'show_in_admin_bar'   => true,
-		        'menu_position'       => 110,
-		        'can_export'          => true,
-		        'has_archive'         => true,
-		        'exclude_from_search' => false,
-		        'publicly_queryable'  => true,
-		        'capability_type'     => 'page',
-		    );
+		    // Set arguments for our cpt
+		    $args = array( 
+			    'labels' => $labels,
+			    'hierarchical' => true,
+			    'description' => 'A simple photo gallery for WordPress using Lity',
+			    'supports' => array( 'title', 'editor', 'thumbnail'),
+			    'public' => true,
+			    'show_ui' => true,
+			    'show_in_menu' => true,
+			    'menu_icon' => '',
+			    'show_in_nav_menus' => true,
+			    'publicly_queryable' => true,
+			    'exclude_from_search' => true,
+			    'has_archive' => true,
+			    'query_var' => true,
+			    'can_export' => true,
+			    'rewrite' => true,
+			    'capability_type' => $this->slug,
+			    'map_meta_cap' => false
+			);
     
 			register_post_type( $this->slug, $args );
 		}
 		
 		// custom option and settings
 		function settings_init() {
+			
+			// Register plugin cpt capabilities
+			$this->add_theme_caps();
 			
 			$options = array();
 			
