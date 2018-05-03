@@ -193,7 +193,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		}
 		
 		function extender_settings_section_callback() { 
-			echo __( 'This is the section description', 'extender' );
+			echo __( 'This is the section description', 'extender-photo-gallery' );
 		}
 		
 		// Enqueue js and css files
