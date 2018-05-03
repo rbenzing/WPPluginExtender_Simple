@@ -108,7 +108,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		// custom option and settings
 		function settings_init() {
 			// register a new setting for "extender-photo-gallery" page
-			register_setting( 'extender_gallery', 'extender_gallery_options' );
+			register_setting( 'extender_gallery', 'extender_gallery_settings' );
 		 
 			// register a new section in the "extender-photo-gallery" page
 		 	add_settings_section(

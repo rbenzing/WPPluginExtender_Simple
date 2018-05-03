@@ -21,10 +21,10 @@
  <form action="options.php" method="post">
  <?php
  // output security fields for the registered setting "wporg"
- settings_fields( 'extender_gallery_options' );
+ settings_fields( 'extender_gallery_settings' );
  // output setting sections and their fields
  // (sections are registered for "extender-photo-gallery", each field is registered to a specific section)
- do_settings_sections( 'extender_gallery_options' );
+ do_settings_sections( 'extender_gallery_settings' );
  // output save settings button
  submit_button( 'Save Settings' );
  ?>
