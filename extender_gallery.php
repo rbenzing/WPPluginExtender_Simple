@@ -61,15 +61,15 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		}
 		
 		function register() {
-			// register our extender_gallery_settings_init to the admin_init action hook
-		 	add_action( 'admin_init', 'extender_gallery_settings_init' );
-		 	
-		 	// register our scripts and styles
+			// register our scripts and styles
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 			
 			// register our admin sidebar menu link and plugin page settings link
 			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 			add_filter( "plugin_action_links_$this->plugin", array( $this, 'settings_link' ) );
+			
+			// register our extender_gallery_settings_init to the admin_init action hook
+		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
 		}
 		
 		public function settings_link( $links ) {
@@ -95,62 +95,105 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// Register our gallery post type
 		function custom_post_type_callback() {
-			register_post_type( 'extender_gallery', ['public' => true, 'label' => 'Extender Photo Gallery'] );
+			register_post_type( 'extender_gallery', array(
+                           'labels'      => array(
+                               'name'          => __('Photo Gallery'),
+                               'singular_name' => __('Photo Gallery'),
+                           ),
+                           'public'      => true,
+                           'has_archive' => true,
+                       ) );
 		}
 		
 		// custom option and settings
-		function extender_gallery_settings_init() {
+		function settings_init() {
 			// register a new setting for "extender-photo-gallery" page
 			register_setting( 'extender_gallery', 'extender_gallery_options' );
 		 
 			// register a new section in the "extender-photo-gallery" page
-		 	add_settings_section( 'extender_gallery_section_developers', __( 'The Matrix has you.', 'extender-photo-gallery' ), 'extender_gallery_section_developers_cb', 'extender_gallery' );
-		 
-		 	// register a new field in the "extender_gallery_section_developers" section, inside the "extender-photo-gallery" page
-		 	add_settings_field( 'extender_gallery_field_pill', // as of WP 4.6 this value is used only internally
-		 	// use $args' label_for to populate the id inside the callback
-		 	__( 'Pill', 'extender-photo-gallery' ), 'extender_gallery_field_pill_cb', 'extender_gallery', 'extender_gallery_section_developers', [ 'label_for' => 'extender_gallery_field_pill', 'class' => 'extender_gallery_row', 'extender_gallery_custom_data' => 'custom' ] );
+		 	add_settings_section(
+				'extender_admin_section', 
+				__( 'The Simplest Photo Gallery In The World', 'extender-photo-gallery' ), 
+				array($this, 'extender_settings_section_callback'), 
+				'extender_gallery'
+			);
+		
+			add_settings_field( 
+				'extender_text_field', 
+				__( 'Text Field', 'extender-photo-gallery' ), 
+				array($this, 'extender_text_field_render'), 
+				'extender_gallery', 
+				'extender_admin_section' 
+			);
+		
+			add_settings_field( 
+				'extender_textarea_field', 
+				__( 'Textarea Field', 'extender-photo-gallery' ), 
+				array($this, 'extender_textarea_field_render'), 
+				'extender_gallery', 
+				'extender_admin_section' 
+			);
+		
+			add_settings_field( 
+				'extender_select_field', 
+				__( 'Select Field', 'extender-photo-gallery' ), 
+				array($this, 'extender_select_field_render'), 
+				'extender_gallery', 
+				'extender_admin_section' 
+			);
+		
+			add_settings_field( 
+				'extender_radio_field', 
+				__( 'Radio field description', 'extender-photo-gallery' ), 
+				array($this, 'extender_radio_field_render'), 
+				'extender_gallery', 
+				'extender_admin_section'
+			);
+		
 		}
 		
-		/*
-		* section callbacks can accept an $args parameter, which is an array.
-		* $args have the following keys defined: title, id, callback.
-		* the values are defined at the add_settings_section() function.
-		*/
-		function extender_gallery_section_developers_cb( $args ) {
-		?>
-			<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'Follow the white rabbit.', 'extender-photo-gallery' ); ?></p>
-		<?php
-		}
-		 
-		/* 
-		* field callbacks can accept an $args parameter, which is an array.
-		* $args is defined at the add_settings_field() function.
-		* wordpress has magic interaction with the following keys: label_for, class.
-		* the "label_for" key value is used for the "for" attribute of the <label>.
-		* the "class" key value is used for the "class" attribute of the <tr> containing the field.
-		* you can add custom key value pairs to be used inside your callbacks.
-		*/
-		function extender_gallery_field_pill_cb( $args ) {
-			// get the value of the setting we've registered with register_setting()
+		// Text field html callback
+		function extender_text_field_render() { 
 			$options = get_option( 'extender_gallery_options' );
-			// output the field
 			?>
-			<select id="<?php echo esc_attr( $args['label_for'] ); ?>" data-custom="<?php echo esc_attr( $args['extender_gallery_custom_data'] ); ?>" name="extender_gallery_options[<?php echo esc_attr( $args['label_for'] ); ?>]">
-		 		<option value="red" <?php echo isset( $options[ $args['label_for'] ] ) ? ( selected( $options[ $args['label_for'] ], 'red', false ) ) : ( '' ); ?>>
-		 			<?php esc_html_e( 'red pill', 'extender-photo-gallery' ); ?>
-		 		</option>
-		 		<option value="blue" <?php echo isset( $options[ $args['label_for'] ] ) ? ( selected( $options[ $args['label_for'] ], 'blue', false ) ) : ( '' ); ?>>
-		 			<?php esc_html_e( 'blue pill', 'extender-photo-gallery' ); ?>
-		 		</option>
-		 	</select>
-		 	<p class="description">
-		 		<?php esc_html_e( 'You take the blue pill and the story ends. You wake in your bed and you believe whatever you want to believe.', 'extender-photo-gallery' ); ?>
-			</p>
-		 	<p class="description">
-		 		<?php esc_html_e( 'You take the red pill and you stay in Wonderland and I show you how deep the rabbit-hole goes.', 'extender-photo-gallery' ); ?>
-			</p>
-		<?php
+			<input type='text' name='extender_settings[extender_text_field]' value='<?php echo esc_attr( $options['extender_text_field'] ); ?>'>
+			<?php
+		}
+		
+		// textarea field html callback
+		function extender_textarea_field_render() { 
+			$options = get_option( 'extender_gallery_options' );
+			?>
+			<textarea cols='40' rows='5' name='extender_settings[extender_textarea_field_textarea]'> 
+				<?php echo esc_textarea( $options['extender_textarea_field_textarea'] ); ?>
+		 	</textarea>
+			<?php
+		}
+		
+		// select field html callback
+		function extender_select_field_render() { 
+			$options = get_option( 'extender_gallery_options' );
+			?>
+			<select name='extender_settings[extender_select_field]'>
+				<option value='1' <?php selected( $options['extender_select_field'], 1 ); ?>>Option 1</option>
+				<option value='2' <?php selected( $options['extender_select_field'], 2 ); ?>>Option 2</option>
+				<option value='3' <?php selected( $options['extender_select_field'], 3 ); ?>>Option 3</option>
+				<option value='4' <?php selected( $options['extender_select_field'], 4 ); ?>>Option 4</option>
+			</select>
+			<?php
+		}
+		
+		// radio field html callback
+		function extender_radio_field_render() { 
+			$options = get_option( 'extender_gallery_options' );
+			?>
+			<input type='radio' name='extender_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 1 ); ?> value='1'> Yes
+			<input type='radio' name='extender_settings[extender_radio_field]' <?php checked( $options['extender_radio_field'], 0 ); ?> value='0'> No
+			<?php
+		}
+		
+		function extender_settings_section_callback() { 
+			echo __( 'This is the section description', 'extender' );
 		}
 		
 		// Enqueue js and css files
