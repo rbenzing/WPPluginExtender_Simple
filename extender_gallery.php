@@ -49,6 +49,7 @@ if( file_exists( PLUGIN_PATH . '/vendor/autoload.php' ) ) {
 }
 */
 
+// Check if class exists if not run our class
 if(!class_exists('WPPluginExtenderPhotoGallery')) {
 
 	class WPPluginExtenderPhotoGallery {
@@ -87,6 +88,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		 	add_action( 'admin_init', array( $this, 'settings_init' ) );
 		}
 		
+		// Callback function for our plugin settings link
 		public function settings_link( $links ) {
 			$settings_link = '<a href="admin.php?page='.$this->options.'">Settings</a>';
 			array_push( $links, $settings_link );
