@@ -173,9 +173,7 @@ if(!class_exists('WPPluginExtenderPhotoGallery')) {
 		
 		// custom option and settings
 		function settings_init() {
-			
-			$options = array();
-			
+						
 			// register a new section in the "extender_gallery" page
 		 	add_settings_section(
 				$this->slug.'_admin_section', 
