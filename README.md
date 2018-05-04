@@ -58,19 +58,29 @@ The follow is a list of header comments:
 - Why use Licensing? it's required if you want your plugin in the WordPress plugin repository
 - Place license in your plugin head after your header comments
 
-## 4. Folder Structure / Plugin Name executible is plugin-name.php not index.php which contains "<?php // Silence is golden" so to prevent directory browsing
+## 4. Folder Structure / Plugin Name 
 
-## 5. ABSPATH - (WordPress Absolute Path) can be used to add to the top of every plugin file to check for proper instantiation. This prevents direct access to your plugin files from via outside scripts or crawlers.
+Executable plugin file is typically the folder name .php but can be named anything using OOP anything but index.php which contains "<?php // Silence is golden" so to prevent directory browsing.
+
+## 5. Constants
+
+**ABSPATH** - (WordPress Absolute Path) can be used to add to the top of every plugin file to check for proper instantiation. This prevents direct access to your plugin files from via outside scripts or crawlers.
+```
 if(!defined('ABSPATH')){ die; } or defined('ABSPATH') or die('Hack attempt');
-
+```
 Other cool constants builtin to WordPress:
 
-DOING_AJAX - run some code only when a WordPress ajax request is running
+**DOING_AJAX** - run some code only when a WordPress ajax request is running.
+```
 if(is_admin() && (!defined(‘DOING_AJAX’) || !DOING_AJAX)){ // do something }
-DOING_CRON - run some code only when a WordPress cron job is running
+```
+**DOING_CRON** - run some code only when a WordPress cron job is running
+```
 if(defined(‘DOING_CRON) && DOING_CRON){ // do something }
-
-## 6. class_exists or function_exists - A function for checking if your class or function is already loaded in WordPress. This is used to avoid code conflicts and prevent errors and broken code.
+```
+## 6. class_exists or function_exists
+A function for checking if your class or function is already loaded in WordPress. This is used to avoid code conflicts and prevent errors and broken code.
+```
 if(!function_exists('my_custom_function_name')){
   // run code
 }
@@ -80,8 +90,8 @@ if(!class_exists('ClassName')){
 if(!method_exists($classvar, 'MethodName')) {
   // run code
 }
-
-- PHP Visibility Methods:
+```
+- Use PHP Visibility Methods When Using OOP to help with overall stability and security of your plugin:
  Public - Can be accessed everywhere
  Protected - Can be accessed within the class or extensions of the class
  Private -  Can be accessed only within the class
@@ -89,8 +99,10 @@ if(!method_exists($classvar, 'MethodName')) {
 - Class Visibility Methods:
   final - do not allow extension of the class to other classes
 
-## 7. Unique Class Name or Function Names - use a unique name as to not conflict with any other plugins.
-Use casing: Pascal Case (ExampleClass), Camel Case (exampleClass), Underscore (example_class)
+## 7. Unique Class Name or Function Names
+Use a unique name as to not conflict with any other plugins.
+
+Use casing: Pascal Case (ExampleClass), Camel Case (exampleClass), Underscore (example_class) something to follow.
 
 - PHP recommends PSR-1 (PHP Standard Recommendation 1) and PSR-2
 
@@ -98,13 +110,18 @@ Use casing: Pascal Case (ExampleClass), Camel Case (exampleClass), Underscore (e
 Activation and deactivation hooks provide ways to perform actions when plugins are activated or deactivated.
 
 On activation, plugins can run a routine to add rewrite rules, add custom database tables, or set default option values.
+```
 register_activation_hook( __FILE__, 'pluginprefix_callback_function_to_run' );
+```
 On deactivation, plugins can run a routine to remove temporary data such as cache and temp files and directories.
+```
 register_deactivation_hook( __FILE__, 'pluginprefix_callback_function_to_run' );
+```
 On uninstall, plugins can clean up themselves from the system such as any plugin options and/or settings specific to to the plugin, and/or other database entities such as tables 
+```
 register_uninstall_hook(__FILE__, 'pluginprefix_function_to_run');
-
- - Use Constants for plugin directory paths
+```
+ - Use Constants for plugin directory paths and save yourself extra coding time.
 
 ## 8. Security and Validation - Please keep in mind that your code may be running across hundreds, perhaps even millions, of websites, so security is of the utmost importance.
 Make sure your plugin follows the following best practices:
